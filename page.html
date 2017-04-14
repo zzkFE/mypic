@@ -12,8 +12,7 @@
 			height:100%;
 			overflow: hidden;
 			font-family: "Microsoft YaHei","Helvetica Neue",Helvetica,Arial,"Hiragino Sans GB","Hiragino Sans GB W3","Microsoft YaHei UI","WenQuanYi Micro Hei",sans-serif;
-
-			background-color:#eabdbd;
+			background-size:100% 100%;
 		}
 		.container{
 			min-height:100%;
@@ -495,6 +494,7 @@
 									.fadeIn(680);
 
 						myImage.onload =function(){
+							var imgsrc = this.src;
 							stopTime = new Date().getTime();
 							section.addClass('bg');
 							$("<div>")
@@ -504,10 +504,17 @@
 								})
 								.appendTo(section)
 								.fadeIn(680);
+
+							setTimeout(function(){
+								$("html")
+									.css({
+										"background-image":"url("+imgsrc+")"
+									})
+							},480)
 							$(this)
 								.addClass('page-image')
 								.appendTo(section)
-								.slideDown(680);
+								.fadeIn(680);
 
 							//绘制文字
 							var textLeft= null;
@@ -671,7 +678,6 @@
 			if(ic()==false){
 				addPage(function(){
 					var speed = stopTime - startTime;
-					console.log(speed)
 					if(speed <= 1000){
 						palyaudio();
 						setTimeout(function(){
