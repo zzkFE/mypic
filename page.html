@@ -520,8 +520,11 @@
 								if(nettype =="WIFI"){
 									$(".loading-content p").text("您正在使用WIFI，默认为您加载高质量图文！");
 								}
-								else{
+								else if(nettype !=""){
 									$(".loading-content p").text("您正在使用数据流量访问，将按需加载图文！");
+								}
+								else{
+									$(".loading-content p").text("网络情况较好，默认为您加载高质量图文！");
 								}
 								
 							}
@@ -686,9 +689,10 @@
 			            c = !1;
 			            break
 			        }
-			    return c
+			    return c;
 			};
 			var iw = function(){
+				console.log(navigator.userAgent);
 				if(navigator.userAgent.match(/WIFI/i)){
 					return "WIFI";
 				}
