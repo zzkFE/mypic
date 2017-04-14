@@ -12,12 +12,12 @@
 			height:100%;
 			overflow: hidden;
 			font-family: "Microsoft YaHei","Helvetica Neue",Helvetica,Arial,"Hiragino Sans GB","Hiragino Sans GB W3","Microsoft YaHei UI","WenQuanYi Micro Hei",sans-serif;
-			background-size:100% 100%;
 		}
 		.container{
 			min-height:100%;
 			height:100%;
 			background:#fff;
+			z-index:5;
 		}
 		.page-section{
 			display: none;
@@ -26,9 +26,7 @@
 			height:100%;
 			overflow: hidden;
 			text-align: center;
-		}
-		.page-section.bg{
-			background-color:#fff;
+			z-index:5;
 		}
 		.page-section.animate{
 			transition: margin 480ms cubic-bezier(0.7,-0.01, 0.44, 1.46);
@@ -114,6 +112,12 @@
 		}
 		.page-section.page-last{
 			background-color:#e25858;
+			color:#fff;
+			font-size:16px;
+		}
+		.page-section.page-last img{
+			width:120px;
+			margin-top:50%;
 		}
 		.pagecount{
 			position: fixed;
@@ -396,9 +400,23 @@
 		    transform: translate(500px, 0px);
 		  }
 		}
+
+		#container-bg{
+			position: fixed;
+			top:0;
+			bottom:0;
+			left:0;
+			right:0;
+			background-size:100% 100%;
+			opacity:0.2;
+			z-index:1;
+		}
 	</style>
 </head>
 <body>
+	<div id="container-bg">
+		
+	</div>
 	<div class="audio-control">
 		<audio src="audio.mp3" loop></audio>
 		<img src="./icon/music.png">
@@ -407,6 +425,7 @@
 	<div class="container">
 		
 	</div>
+	
 	<div class="pagecount">1/10</div>
 
 	<div class="barcode">
@@ -470,6 +489,7 @@
 
 			var startTime = null;
 			var stopTime = null;
+			var isLoad =false;
 
 			var addPage = function(cb){
 				if(imagePage<=currentPage && imagePage<imgList.length){
@@ -496,7 +516,7 @@
 						myImage.onload =function(){
 							var imgsrc = this.src;
 							stopTime = new Date().getTime();
-							section.addClass('bg');
+
 							$("<div>")
 								.addClass('page-blur')
 								.css({
@@ -506,7 +526,7 @@
 								.fadeIn(680);
 
 							setTimeout(function(){
-								$("html")
+								$("#container-bg")
 									.css({
 										"background-image":"url("+imgsrc+")"
 									})
@@ -557,6 +577,7 @@
 									.addClass('page-section page-last')
 									.appendTo(container)
 									.fadeIn(280)
+									.html('<img src="./icon/1492148786.png"><p>&copy;zzkFE</p>');
 					}
 
 					imagePage++;
@@ -568,7 +589,7 @@
 			//监听向下滚动事件
 			var a= new ztmEvent($("html")[0])
 			a.on("swipeUp",function(a,b,c){
-				if(currentPage<imgList.length-1 && c>130){
+				if(currentPage<imgList.length-1 && c>130 && isLoad==true){
 					currentPage++;
 					container.children(".page-section").eq(0)
 						.addClass('animate')
@@ -588,7 +609,7 @@
 			
 			});
 			a.on("swipeDown",function(a,b,c){
-				if(currentPage>0 && c>130){
+				if(currentPage>0 && c>130 && isLoad==true){
 					currentPage--;
 					container.children(".page-section").eq(0)
 						.addClass('animate')
@@ -627,7 +648,6 @@
 							"margin-top":-(wh*currentPage-c)+"px"
 						});
 				}
-				
 			})
 			
 
@@ -679,16 +699,19 @@
 				addPage(function(){
 					var speed = stopTime - startTime;
 					if(speed <= 1000){
-						palyaudio();
 						setTimeout(function(){
+							palyaudio();
 							$(".loading").fadeOut(400);
+							isLoad = true;
 						},1500-speed)
 					}
 					else if(speed >= 1500){
+						isLoad = true;
 						$(".loading").fadeOut(400);
 					}
 					else{
 						setTimeout(function(){
+							isLoad = true;
 							$(".loading").fadeOut(400);
 						},1500-speed)
 					}
