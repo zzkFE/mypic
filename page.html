@@ -698,28 +698,44 @@
 			if(ic()==false){
 				addPage(function(){
 					var speed = stopTime - startTime;
+					console.log(speed)
 					if(speed <= 1000){
 						setTimeout(function(){
 							palyaudio();
 							$(".loading").fadeOut(400);
 							isLoad = true;
-						},1500-speed)
+						},1500-speed);
 					}
 					else if(speed >= 1500){
 						isLoad = true;
 						$(".loading").fadeOut(400);
+
+						//预加载全部图片
+						preloadImg();
 					}
 					else{
 						setTimeout(function(){
 							isLoad = true;
 							$(".loading").fadeOut(400);
-						},1500-speed)
+						},1500-speed);
+
+						//预加载全部图片
+						preloadImg();
 					}
 					
 				});
 			}
 			else{
 				$("body").addClass("showcode");
+			};
+			//预加载全部图片
+			var preloadImg =function(){
+				$.each(imgList,function(){
+					if(this.url){
+						var myImage = new Image();
+						myImage.src=this.url;
+					}
+				})
 			}
 		}());
 	</script>
