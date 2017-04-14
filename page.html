@@ -503,7 +503,7 @@
 								$(".loading-content p").text("网速较慢，默认为您展现省流量图文，并关闭音频！");
 							}
 							else{
-								$(".loading-content p").text("网络状态较好，默认为您加载高质量图文！");
+								$(".loading-content p").text(iw()+"网络状态较好，默认为您加载高质量图文！");
 							}
 						}, 600);
 
@@ -580,8 +580,7 @@
 									.html('<img src="./icon/1492148786.png"><p>&copy;zzkFE</p>');
 					}
 
-					imagePage++;
-					
+					imagePage++;	
 				}
 			};
 
@@ -671,7 +670,22 @@
 			};
 			var iw = function(){
 				alert(navigator.userAgent);
-				return navigator.userAgent.match(/WIFI/i);
+				if(navigator.userAgent.match(/WIFI/i)){
+					return "WIFI";
+				}
+				else if(navigator.userAgent.match(/4G/i)){
+					return "4G";
+				}
+				else if(navigator.userAgent.match(/3G/i)){
+					return "3G";
+				}
+				else if(navigator.userAgent.match(/2G/i)){
+					return "2G"
+				}
+				else{
+					return "";
+				}
+				
 			}
 
 
@@ -702,7 +716,6 @@
 			if(ic()==false){
 				addPage(function(){
 					var speed = stopTime - startTime;
-					console.log(speed)
 					if(speed <= 1000){
 						setTimeout(function(){
 							palyaudio();
@@ -732,7 +745,7 @@
 			//预加载全部图片
 			var preloadImg =function(){
 				//如果是wifi
-				if(iw()){
+				if(iw() == "WIFI"){
 					alert("加载了好多");
 					$.each(imgList,function(){
 						if(this.url){
