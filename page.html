@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+	<meta name="apple-mobile-web-app-capable" content="yes" />    
+	<meta charset="UTF-8">
+	<title>图片加载器</title>
+	<style>
+		html,body{
+			margin:0;
+			padding:0;
+			height:100%;
+			overflow: hidden;
+			font-family: "Microsoft YaHei","Helvetica Neue",Helvetica,Arial,"Hiragino Sans GB","Hiragino Sans GB W3","Microsoft YaHei UI","WenQuanYi Micro Hei",sans-serif;
+
+			background-color:#eabdbd;
+		}
+		.container{
+			min-height:100%;
+			height:100%;
+			background:#fff;
+		}
+		.page-section{
+			display: none;
+			position: relative;
+			width:100%;
+			height:100%;
+			overflow: hidden;
+			text-align: center;
+		}
+		.page-section.bg{
+			background-color:#fff;
+		}
+		.page-section.animate{
+			transition: margin 480ms cubic-bezier(0.7,-0.01, 0.44, 1.46);
+			-moz-transition: margin 480ms cubic-bezier(0.7,-0.01, 0.44, 1.46); /* Firefox 4 */
+			-webkit-transition: margin 480ms cubic-bezier(0.7,-0.01, 0.44, 1.46); /* Safari 和 Chrome */
+			-o-transition: margin 480ms cubic-bezier(0.7,-0.01, 0.44, 1.46); /* Opera */
+		}
+		.page-section .page-blur{
+			display: none;
+			position: absolute;
+			top:0;
+			right:0;
+			bottom:0;
+			left:0;
+			-webkit-filter: blur(2px);
+            -moz-filter: blur(2px);
+            -o-filter: blur(2px);
+            -ms-filter: blur(2px);
+            filter: blur(2px);
+            opacity: 0.45;
+            z-index:98;
+
+            background-size:100% 100%;
+			background-repeat: no-repeat;
+		}
+		.page-section img.page-image{
+			display: none;
+			position: relative;
+			width:100%;
+			z-index:99;
+		}
+		.page-section .section-text{
+			position: absolute;
+			bottom:150px;
+			text-align: center;
+			color:#fff;
+			padding:20px;
+			z-index:101;
+			font-size:30px;
+			left:30px;	
+		}
+		.page-section .section-text.style-white{
+			border:3px solid #fff;
+			background:rgba(255,255,255,0.3)
+		}
+		.page-section .section-text.style-white.double-border:after{
+			content:"";
+			position: absolute;
+			top:2px;
+			left:2px;
+			bottom:2px;
+			right:2px;
+			border:1px solid #fff;
+		}
+		.page-section .section-text.style-black{
+			border:1px solid #000;
+			background:rgba(0,0,0,0.1);
+			color:#000;
+			font-weight:bold;
+		}
+		.page-section .section-text.style-black.double-border:after{
+			content:"";
+			position: absolute;
+			top:0px;
+			left:0px;
+			bottom:-8px;
+			right:-8px;
+			border-right:3px solid #000;
+			border-bottom:3px solid #000;
+		}
+		.page-section .section-text.style-purple{
+			border:3px solid #A734C6;
+			color:#A734C6;
+			font-weight:bold;
+		}
+		.page-section .section-text.style-yinyong{
+			background: url(icon/yinyong-bg.png) no-repeat;
+			background-size:100% 100%;
+			width:90px;
+			min-height:90px;
+			color:#E81858;
+			font-weight:bold;
+		}
+		.page-section.page-last{
+			background-color:#e25858;
+		}
+		.pagecount{
+			position: fixed;
+			top:50px;
+			right:25px;
+			color:#fff;
+			z-index:100;
+			font-size:13px;
+		}
+		.audio-control{
+			position: fixed;
+			right:15px;
+			top:15px;
+			z-index:999;
+			width:30px;
+			height:30px;
+			padding:5px;
+		}
+		.audio-control.animate{
+			animation: audiorotate1 4s infinite linear;
+		    -moz-animation: audiorotate1 4s infinite linear;
+		    -webkit-animation: audiorotate1 4s infinite linear;
+		    -o-animation: audiorotate1 4s infinite linear
+		}
+		@-webkit-keyframes audiorotate1 {
+		    from {
+		        -webkit-transform: rotate(0)
+		    }
+
+		    to {
+		        -webkit-transform: rotate(360deg)
+		    }
+		}
+		@-moz-keyframes audiorotate1 {
+		    from {
+		        -webkit-transform: rotate(0)
+		    }
+
+		    to {
+		        -webkit-transform: rotate(360deg)
+		    }
+		}
+		@-o-keyframes audiorotate1 {
+		    from {
+		        -webkit-transform: rotate(0)
+		    }
+
+		    to {
+		        -webkit-transform: rotate(360deg)
+		    }
+		}
+		@keyframes audiorotate1 {
+		    from {
+		        -webkit-transform: rotate(0)
+		    }
+
+		    to {
+		        -webkit-transform: rotate(360deg)
+		    }
+		}
+		.audio-control img{
+			width:100%;
+		}
+		.barcode{
+			display: none;
+			position: fixed;
+			top:0;
+			bottom:0;
+			right:0;
+			left:0;
+			background-color:#ffffff;
+			z-index:999;
+			text-align: center;
+			color:#555;
+			font-size:26px;
+			font-weight:100;
+		}
+		body.showcode .barcode{
+			display: block;
+		}
+		.barcode .barcode-content{
+			position: absolute;
+			width:400px;
+			top:50%;
+			left:50%;
+			margin-top:-200px;
+			margin-left:-200px;
+		}
+		.barcode .barcode-content img{
+			width:50%;
+		}
+		.loading{
+			position: fixed;
+			top:0;
+			bottom:0;
+			right:0;
+			left:0;
+			background-color:#000;
+			z-index:1000;
+			text-align: center;
+			color:#efefef;
+			font-size:26px;
+			font-weight:100;
+		}
+		.loading .loading-content{
+			position: absolute;
+			top:50%;
+			left:0;
+			width:100%;
+			font-size:14px;
+		}
+		body.showcode .loading{
+			display: none;
+		}
+		.person {
+		  position: absolute;
+		  height: 75px;
+		  width: 0;
+		  color: #fff;
+		  left: 50%;
+		  top:50%;
+		  margin-top:-200px;
+		}
+		.person .head:before {
+		  content: "";
+		  position: absolute;
+		  top: 0px;
+		  left: -6px;
+		  height: 2.7px;
+		  width: 42px;
+		  border-radius: 20%;
+		  border: 4px solid white;
+		  background-color: #fff;
+		  transform-origin: 50% 100% 0px;
+		  z-index: 90;
+		}
+		.person .head {
+		  position: absolute;
+		  top: -30px;
+		  left: -6px;
+		  height: 30px;
+		  width: 30px;
+		  border-radius: 50%;
+		  border: 4px solid white;
+		  transform-origin: 50% 100% 0px;
+		  z-index: 90;
+		  -webkit-animation: bob 2s infinite alternate;
+		}
+		.person .head:after {
+		  content: "";
+		  position: absolute;
+		  top: -12px;
+		  left: 9px;
+		  height: 12px;
+		  width: 15px;
+		  border-radius: 30%;
+		  border: 4px solid white;
+		  background-color: #fff;
+		  z-index: 90;
+		}
+		.person .torso {
+		  position: absolute;
+		  height: 60px;
+		  width: 0;
+		  border-left: 2px solid white;
+		  left: 0px;
+		  top: 15px;
+		  z-index: 90;
+		}
+		.person .part {
+		  position: absolute;
+		  left: 0;
+		  top: 75px;
+		  z-index: 90;
+		}
+		.person .part.arm {
+		  position: absolute;
+		  border-left: 3px solid white;
+		  border-bottom: 3px solid white;
+		  height: 45px;
+		  width: 39px;
+		  top: 15px;
+		  right: 300px;
+		  transform-origin: 0% 0% 0px;
+		  -webkit-animation: pump 1s infinite ease-in-out;
+		}
+		.person .part.arm.one {
+		  transform: rotate3d(0, 0, 1, -90deg);
+		}
+		.person .part.arm.two {
+		  transform: rotate3d(0, 0, 1, -90deg);
+		  animation-delay: .5s;
+		}
+		.person .part.leg {
+		  height: 57px;
+		  width: 60px;
+		  border-right: 3px solid white;
+		  border-top: 3px solid white;
+		  -webkit-animation: run 1s infinite ease-in;
+		  transform-origin: 0% 0% 0px;
+		}
+		.person .part.leg.one {
+		  transform: rotate3d(0, 0, 1, 90deg);
+		}
+		.person .part.leg.two {
+		  transform: rotate3d(0, 0, 1, 80deg);
+		  animation-delay: .5s;
+		}
+		.person .part .foot {
+		  position: absolute;
+		  top: 90px;
+		  left: 0;
+		  width: 3px;
+		  height: 3px;
+		  background-color: #ffffff;
+		  z-index: 900;
+		  border: 3px solid red;
+		}
+		@keyframes run {
+		  0% {
+		    transform: rotate3d(0, 0, 1, -5deg);
+		  }
+		  50% {
+		    transform: rotate3d(0, 0, 1, 150deg);
+		  }
+		  100% {
+		    transform: rotate3d(0, 0, 1, -5deg);
+		  }
+		}
+		@keyframes bob {
+		  0% {
+		    transform: rotate3d(0, 0, 1, 5deg);
+		  }
+		  25% {
+		    transform: rotate3d(0, 0, 1, -30deg) skew(15deg, 0deg);
+		  }
+		  50% {
+		    transform: rotate3d(0, 0, 1, 5deg);
+		  }
+		  75% {
+		    transform: rotate3d(0, 0, 1, -30deg) skew(15deg, 0deg);
+		  }
+		  100% {
+		    transform: rotate3d(0, 0, 1, 20deg) skew(-15deg, 0deg);
+		  }
+		}
+		@keyframes pump {
+		  0% {
+		    transform: rotate3d(0, 0, 1, 80deg);
+		  }
+		  50% {
+		    transform: rotate3d(0, 0, 1, -70deg);
+		  }
+		  100% {
+		    transform: rotate3d(0, 0, 1, 80deg);
+		  }
+		}
+		@keyframes spin {
+		  0% {
+		    transform: rotate3d(0, 0, 1, -180deg);
+		  }
+		  25% {
+		    transform: rotate3d(0, 0, 1, -100deg);
+		  }
+		  75% {
+		    transform: rotate3d(0, 0, 1, 100deg);
+		  }
+		  100% {
+		    transform: rotate3d(0, 0, 1, 180deg);
+		  }
+		}
+		@keyframes sprint {
+		  0% {
+		    transform-origin: 50% 50% 0px;
+		    transform: translate(-500px, 0px);
+		  }
+		  100% {
+		    transform: translate(0px, 0px);
+		    transform-origin: 50% 50% 0px;
+		    transform: translate(500px, 0px);
+		  }
+		}
+	</style>
+</head>
+<body>
+	<div class="audio-control">
+		<audio src="audio.mp3" loop></audio>
+		<img src="./icon/music.png">
+	</div>
+	
+	<div class="container">
+		
+	</div>
+	<div class="pagecount">1/10</div>
+
+	<div class="barcode">
+		<div class="barcode-content">
+			<img src="./icon/1492148786.png">
+			<p>请使用手机浏览器打开</p>
+		</div>
+	</div>
+
+	<div class="loading">
+		<div class="loading-content">
+			<div class='person'>
+			    <div class='head'></div>
+			    <div class='part arm one'></div>
+			    <div class='part arm two'></div>
+			    <div class='torso'></div>
+			    <div class='part leg one'></div>
+			    <div class='part foot one'></div>
+			    <div class='part leg two'></div>
+			    <div class='part foot two'></div>
+			</div>
+			<p class="speed"></p>
+		</div>
+	</div>
+	<script type="text/javascript" src="./js/jquery-2.1.3.min.js"></script>
+	<script type="text/javascript" src="./js/mevent.js"></script>
+	<script>
+		(function(){
+			var imgList = [{
+				"url":'./section-image/1.jpg',
+				"text":"山水中国梦",
+				"textStyle":"style-yinyong",
+				"textPosition":[20,20]
+			},{
+				"url":'./section-image/2.jpg',
+				"text":"精彩中国情",
+				"textStyle":"style-black double-border"
+			},{
+				"url":'./section-image/3.jpg',
+				"text":"山水中国梦",
+				"textStyle":"style-purple"
+			},{
+				"url":'./section-image/4.jpg',
+				"text":"精彩中国情",
+				"textStyle":"style-yinyong"
+			},{
+				"url":'./section-image/5.jpg',
+				"text":"山水中国梦",
+				"textStyle":"style-white"
+			},{
+
+			}];
+			var currentPage = 0;
+			var imagePage = 0;
+			var container = $(".container");
+			var wh = $(window).height();
+			var ww = $(window).width();
+
+			var countEle = $(".pagecount");
+			var audioEle = $(".audio-control");
+
+			var startTime = null;
+			var stopTime = null;
+
+			var addPage = function(cb){
+				if(imagePage<=currentPage && imagePage<imgList.length){
+					if(imgList[imagePage].url){
+						var myImage = new Image();
+
+						startTime = new Date().getTime();
+						//测速
+						setTimeout(function(){
+							if(stopTime==null){
+								$(".loading-content p").text("网速较慢，默认为您展现省流量图文，并关闭音频！");
+							}
+							else{
+								$(".loading-content p").text("网络状态较好，默认为您加载高质量图文！");
+							}
+						}, 600);
+
+						var section = 
+								$("<div>")
+									.addClass('page-section')
+									.appendTo(container)
+									.fadeIn(680);
+
+						myImage.onload =function(){
+							stopTime = new Date().getTime();
+							section.addClass('bg');
+							$("<div>")
+								.addClass('page-blur')
+								.css({
+									"background-image":"url("+this.src+")"
+								})
+								.appendTo(section)
+								.fadeIn(680);
+							$(this)
+								.addClass('page-image')
+								.appendTo(section)
+								.slideDown(680);
+
+							//绘制文字
+							var textLeft= null;
+							var textBottom= null;
+
+							if(imgList[imagePage-1].textPosition){
+								textLeft= imgList[imagePage-1].textPosition[0]
+								textBottom= imgList[imagePage-1].textPosition[1]
+							}
+							else{
+								textLeft= getRandomNum(5,ww-200);
+								textBottom= getRandomNum(60,wh-150);
+							}
+							var textdiv = $("<div>")
+								.addClass('section-text '+imgList[imagePage-1].textStyle)
+								.text(imgList[imagePage-1].text)
+								.css({
+									"left":textLeft,
+									"bottom":textBottom
+								})
+								.appendTo(section);
+							if(textLeft+textdiv.outerWidth()>ww){
+								textLeft.css({
+									"right":10
+								})
+							}
+							if(textBottom+textdiv.outerHeight()>wh){
+								textdiv.css({
+									"bottom":textBottom-textdiv.outerHeight()-120
+								})
+							};
+
+							cb && cb();
+						}
+						myImage.src=imgList[imagePage].url;	
+					}
+					else{
+						var section = 
+								$("<div>")
+									.addClass('page-section page-last')
+									.appendTo(container)
+									.fadeIn(280)
+					}
+
+					imagePage++;
+					
+				}
+			};
+
+
+			//监听向下滚动事件
+			var a= new ztmEvent($("html")[0])
+			a.on("swipeUp",function(a,b,c){
+				if(currentPage<imgList.length-1 && c>130){
+					currentPage++;
+					container.children(".page-section").eq(0)
+						.addClass('animate')
+						.css({
+							"margin-top":-wh*currentPage+"px"
+						});
+					showCurrentCount();
+					addPage();	
+				}
+				else{
+					container.children(".page-section").eq(0)
+						.addClass('animate')
+						.css({
+							"margin-top":-wh*currentPage+"px"
+						});
+				}
+			
+			});
+			a.on("swipeDown",function(a,b,c){
+				if(currentPage>0 && c>130){
+					currentPage--;
+					container.children(".page-section").eq(0)
+						.addClass('animate')
+						.css({
+							"margin-top":-wh*currentPage+"px"
+						});
+
+					showCurrentCount();
+				}
+				else{
+					container.children(".page-section").eq(0)
+						.addClass('animate')
+						.css({
+							"margin-top":-wh*currentPage+"px"
+						});
+				}
+				
+			});
+
+			a.on("swipeUping",function(a,b,c){
+				if(currentPage<imgList.length-1){
+					container.children(".page-section").eq(0)
+						.removeClass('animate')
+						.css({
+							"margin-top":-(wh*currentPage+c)+"px"
+						});
+				}
+				
+			})
+
+			a.on("swipeDowning",function(a,b,c){
+				if(currentPage>0){
+					container.children(".page-section").eq(0)
+						.removeClass('animate')
+						.css({
+							"margin-top":-(wh*currentPage-c)+"px"
+						});
+				}
+				
+			})
+			
+
+			var showCurrentCount =function(){
+				countEle.text((currentPage+1)+"/"+imgList.length);
+			};showCurrentCount();
+
+			var getRandomNum =function(Min,Max) { 
+				var Range = Max - Min; 
+				var Rand = Math.random(); 
+				return(Min + Math.round(Rand * Range)); 
+			}
+
+			var ic =function() {
+			    for (var d = navigator.userAgent, b = "Android;iPhone;SymbianOS;Windows Phone;iPad;iPod".split(";"), c = !0, a = 0; a < b.length; a++)
+			        if (0 < d.indexOf(b[a])) {
+			            c = !1;
+			            break
+			        }
+			    return c
+			};
+
+
+			//播放音频
+			a.on("tap",function(a,b,c){
+				var target = c.target || c.srcElement;
+				if(target == audioEle.children("img")[0]){
+					if(audioEle.children("audio")[0].paused){
+						palyaudio();
+					}
+					else{
+						pauseaudio();
+					};
+					return false;
+				};	
+			});
+
+			var palyaudio =function(){
+				audioEle.children("audio")[0].play();
+				audioEle.addClass('animate');
+			}
+			var pauseaudio =function(){
+				audioEle.children("audio")[0].pause();
+				audioEle.removeClass('animate');
+			}
+
+			//页面开始加载
+			if(ic()==false){
+				addPage(function(){
+					var speed = stopTime - startTime;
+					console.log(speed)
+					if(speed <= 1000){
+						palyaudio();
+						setTimeout(function(){
+							$(".loading").fadeOut(400);
+						},1500-speed)
+					}
+					else if(speed >= 1500){
+						$(".loading").fadeOut(400);
+					}
+					else{
+						setTimeout(function(){
+							$(".loading").fadeOut(400);
+						},1500-speed)
+					}
+					
+				});
+			}
+			else{
+				$("body").addClass("showcode");
+			}
+		}());
+	</script>
+</body>
+</html>
