@@ -215,18 +215,31 @@
 			bottom:0;
 			right:0;
 			left:0;
-			background-color:#000;
+			background-color:#1C1C20;
 			z-index:1000;
 			text-align: center;
 			color:#efefef;
 			font-size:26px;
 			font-weight:100;
+
+			transition: transform 680ms;
+			-moz-transition: transform 680ms; /* Firefox 4 */
+			-webkit-transition: transform 680ms; /* Safari 和 Chrome */
+			-o-transition: transform 680ms; /* Opera */
+		}
+		.loading.scale{
+			transform:scale(5);
+			-ms-transform:scale(5); 	/* IE 9 */
+			-moz-transform:scale(5); 	/* Firefox */
+			-webkit-transform:scale(5); /* Safari 和 Chrome */
+			-o-transform:scale(5); 	/* Opera */
 		}
 		.loading .loading-content{
 			position: absolute;
 			top:50%;
 			left:0;
 			width:100%;
+			height:50px;
 			font-size:14px;
 		}
 		body.showcode .loading{
@@ -503,7 +516,14 @@
 								$(".loading-content p").text("网速较慢，默认为您展现省流量图文，并关闭音频！");
 							}
 							else{
-								$(".loading-content p").text(iw()+"网络状态较好，默认为您加载高质量图文！");
+								var nettype = iw();
+								if(nettype =="WIFI"){
+									$(".loading-content p").text("您正在使用WIFI，默认为您加载高质量图文！");
+								}
+								else{
+									$(".loading-content p").text("您正在使用数据流量访问，将按需加载图文！");
+								}
+								
 							}
 						}, 600);
 
@@ -669,7 +689,6 @@
 			    return c
 			};
 			var iw = function(){
-				alert(navigator.userAgent);
 				if(navigator.userAgent.match(/WIFI/i)){
 					return "WIFI";
 				}
@@ -718,19 +737,21 @@
 					var speed = stopTime - startTime;
 					if(speed <= 1000){
 						setTimeout(function(){
-							palyaudio();
-							$(".loading").fadeOut(400);
+							if(iw() =="WIFI"){
+								palyaudio();
+							}
+							$(".loading").addClass("scale").fadeOut(400);
 							isLoad = true;
-						},1500-speed);
+						},2000-speed);
 					}
 					else if(speed >= 1500){
 						isLoad = true;
-						$(".loading").fadeOut(400);
+						$(".loading").addClass("scale").fadeOut(400);
 					}
 					else{
 						setTimeout(function(){
 							isLoad = true;
-							$(".loading").fadeOut(400);
+							$(".loading").addClass("scale").fadeOut(400);
 						},1500-speed);
 					};
 					preloadImg();
@@ -746,7 +767,6 @@
 			var preloadImg =function(){
 				//如果是wifi
 				if(iw() == "WIFI"){
-					alert("加载了好多");
 					$.each(imgList,function(){
 						if(this.url){
 							var myImage = new Image();
